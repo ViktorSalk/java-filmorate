@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 
@@ -39,37 +41,42 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film addFilm(@Valid @RequestBody Film film) {
+    public ResponseEntity<Film> createFilm(@Valid @RequestBody Film film) {
         log.debug("Получен фильм для добавления: {}", film);
+        filmValidator(film); // Вызов валидации
         film.setId(getNextId());
 
         films.put(film.getId(), film);
         log.info("Фильм {} успешно добавлен", film);
-        return film;
+
+        // Возвращаем статус 201 (Created) и добавленный фильм
+        return ResponseEntity.status(HttpStatus.CREATED).body(film);
     }
 
     @PutMapping
-    public Film updateFilm(@Valid @RequestBody Film newFilm) {
-        if (newFilm.getId() == null) {
+    public ResponseEntity<Film> updateFilm(@Valid @RequestBody Film film) {
+        if (film.getId() == null) {
             log.error("Не введен Id фильма");
             throw new ValidationException("id фильма не может быть пустым");
         }
-        if (films.containsKey(newFilm.getId())) {
-            Film oldFilm = films.get(newFilm.getId());
+        if (films.containsKey(film.getId())) {
+            Film oldFilm = films.get(film.getId());
 
             // Обновляем данные фильма
-            oldFilm.setName(newFilm.getName());
+            oldFilm.setName(film.getName());
             log.info("Название фильма {} изменено", oldFilm);
-            oldFilm.setDescription(newFilm.getDescription());
+            oldFilm.setDescription(film.getDescription());
             log.info("Описание фильма {} изменено", oldFilm);
-            oldFilm.setReleaseDate(newFilm.getReleaseDate());
+            oldFilm.setReleaseDate(film.getReleaseDate());
             log.info("Дата выхода фильма {} изменена", oldFilm);
-            oldFilm.setDuration(newFilm.getDuration());
+            oldFilm.setDuration(film.getDuration());
             log.info("Длительность фильма {} изменена", oldFilm);
-            return oldFilm;
+
+            // Возвращаем статус 200 (OK) и обновленный фильм
+            return ResponseEntity.ok(oldFilm);
         }
-        log.error("Фильм с id = {} не найден", newFilm.getId());
-        throw new UserNotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
+        log.error("Фильм с id = {} не найден", film.getId());
+        throw new UserNotFoundException("Фильм с id = " + film.getId() + " не найден");
     }
 
     private void filmValidator(@RequestBody Film film) {

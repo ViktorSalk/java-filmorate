@@ -127,7 +127,7 @@ public class FilmControllerTests {
                     film,
                     Film.class);
 
-            assertEquals(HttpStatus.OK, response.getStatusCode());
+            assertEquals(HttpStatus.CREATED, response.getStatusCode()); // Ожидаем статус 201
             assertNotNull(response.getBody());
             assertNotNull(response.getBody().getId());
         }
