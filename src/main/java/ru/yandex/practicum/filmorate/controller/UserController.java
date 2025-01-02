@@ -7,8 +7,11 @@ import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 
+import jakarta.validation.Valid;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,15 +32,13 @@ public class UserController {
     }
 
     @GetMapping
-    public Collection<User> findAll() {
-        return users.values();
+    public List<User> findAll() {
+        return new ArrayList<>(users.values());
     }
 
     @PostMapping
-    public User addUser(@RequestBody User user) {
+    public User addUser(@Valid @RequestBody User user) {
         user.setId(getNextId());
-
-        userValidator(user);
 
         // Проверка на существующий логин
         if (users.values().stream().anyMatch(existingUser -> existingUser.getLogin().equals(user.getLogin()))) {
@@ -56,7 +57,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User newUser) {
+    public User updateUser(@Valid @RequestBody User newUser) {
         if (newUser.getId() == null) {
             log.error("Не введен id пользователя при изменении");
             throw new ValidationException("id пользователя должен быть указан");
@@ -64,8 +65,7 @@ public class UserController {
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
 
-            userValidator(newUser);
-
+            // Обновляем данные пользователя
             oldUser.setEmail(newUser.getEmail());
             oldUser.setLogin(newUser.getLogin());
             if (newUser.getName().isBlank()) {
@@ -76,22 +76,6 @@ public class UserController {
             return oldUser;
         }
         log.error("Пользователь с id {} не найден", newUser.getId());
-        throw new UserNotFoundException("Пользователь с id =" + newUser.getId() + "не найден");
-    }
-
-    private void userValidator(@RequestBody User user) {
-
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.error("Поле Email не заполнено или не содержит символ @ при добавлении");
-            throw new ValidationException("Email должен быть заполнен и содержать символ @");
-        }
-        if (user.getLogin().contains(" ") || user.getLogin().isBlank()) {
-            log.error("Не верно заполнено поле Login");
-            throw new ValidationException("Login пользователя не может быть пустым");
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.error("Введена неверная дата рождения");
-            throw new ValidationException("Дата рождения должна быть в прошлом!");
-        }
+        throw new UserNotFoundException("Пользователь с id =" + newUser.getId() + " не найден");
     }
 }

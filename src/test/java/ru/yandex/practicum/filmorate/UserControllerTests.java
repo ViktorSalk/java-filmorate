@@ -40,24 +40,24 @@ public class UserControllerTests {
         }
 
         @Test
-        void shouldPassValidationWithNullLogin() {
+        void shouldNotPassValidationWithNullLogin() {
             user.setLogin(null);
             Set<ConstraintViolation<User>> violation = validator.validate(user);
-            assertTrue(violation.isEmpty());
+            assertFalse(violation.isEmpty());
         }
 
         @Test
-        void shouldPassValidationWithEmptyLogin() {
+        void shouldNotPassValidationWithEmptyLogin() {
             user.setLogin("");
             Set<ConstraintViolation<User>> violation = validator.validate(user);
-            assertTrue(violation.isEmpty());
+            assertFalse(violation.isEmpty());
         }
 
         @Test
-        void shouldPassValidationWithSpacesInLogin() {
+        void shouldNotPassValidationWithSpacesInLogin() {
             user.setLogin("user login");
             Set<ConstraintViolation<User>> violation = validator.validate(user);
-            assertTrue(violation.isEmpty());
+            assertFalse(violation.isEmpty()); // Ожидаем, что валидация не пройдет
         }
     }
 
@@ -70,24 +70,24 @@ public class UserControllerTests {
         }
 
         @Test
-        void shouldPassValidationWithNullEmail() {
+        void shouldNotPassValidationWithNullEmail() {
             user.setEmail(null);
             Set<ConstraintViolation<User>> violation = validator.validate(user);
-            assertTrue(violation.isEmpty());
+            assertFalse(violation.isEmpty());
         }
 
         @Test
-        void shouldPassValidationWithEmptyEmail() {
+        void shouldNotPassValidationWithEmptyEmail() {
             user.setEmail("");
             Set<ConstraintViolation<User>> violation = validator.validate(user);
-            assertTrue(violation.isEmpty());
+            assertFalse(violation.isEmpty());
         }
 
         @Test
-        void shouldPassValidationWithInvalidEmail() {
+        void shouldNotPassValidationWithInvalidEmail() {
             user.setEmail("useremail.ru");
             Set<ConstraintViolation<User>> violation = validator.validate(user);
-            assertTrue(violation.isEmpty());
+            assertFalse(violation.isEmpty());
         }
     }
 
@@ -100,10 +100,10 @@ public class UserControllerTests {
         }
 
         @Test
-        void shouldPassValidationWithFutureBirthday() {
-            user.setBirthday(LocalDate.now().plusDays(1));
+        void shouldNotPassValidationWithFutureBirthday() {
+            user.setBirthday(LocalDate.now().plusDays(1)); // Установка даты в будущее
             Set<ConstraintViolation<User>> violation = validator.validate(user);
-            assertTrue(violation.isEmpty());
+            assertFalse(violation.isEmpty()); // Ожидаем, что валидация не пройдет
         }
     }
 }

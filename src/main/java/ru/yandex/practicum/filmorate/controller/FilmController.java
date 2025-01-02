@@ -8,8 +8,13 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import org.slf4j.Logger;
 
+import jakarta.validation.Valid;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.time.LocalDate;
-import java.util.*;
 
 @RestController
 @RequestMapping("/films")
@@ -29,16 +34,14 @@ public class FilmController {
     }
 
     @GetMapping
-    public Collection<Film> findAll() {
-        return films.values();
+    public List<Film> findAll() {
+        return new ArrayList<>(films.values());
     }
 
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
+    public Film addFilm(@Valid @RequestBody Film film) {
         log.debug("Получен фильм для добавления: {}", film);
         film.setId(getNextId());
-
-        filmValidator(film);
 
         films.put(film.getId(), film);
         log.info("Фильм {} успешно добавлен", film);
@@ -46,7 +49,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film newFilm) {
+    public Film updateFilm(@Valid @RequestBody Film newFilm) {
         if (newFilm.getId() == null) {
             log.error("Не введен Id фильма");
             throw new ValidationException("id фильма не может быть пустым");
@@ -54,14 +57,13 @@ public class FilmController {
         if (films.containsKey(newFilm.getId())) {
             Film oldFilm = films.get(newFilm.getId());
 
-            filmValidator(newFilm);
-
+            // Обновляем данные фильма
             oldFilm.setName(newFilm.getName());
             log.info("Название фильма {} изменено", oldFilm);
             oldFilm.setDescription(newFilm.getDescription());
             log.info("Описание фильма {} изменено", oldFilm);
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            log.info("Дата выходи фильма {} изменена", oldFilm);
+            log.info("Дата выхода фильма {} изменена", oldFilm);
             oldFilm.setDuration(newFilm.getDuration());
             log.info("Длительность фильма {} изменена", oldFilm);
             return oldFilm;

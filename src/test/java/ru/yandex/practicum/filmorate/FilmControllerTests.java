@@ -56,17 +56,17 @@ public class FilmControllerTests {
         }
 
         @Test
-        void shouldPassValidationWithNullName() {
+        void shouldNotPassValidationWithNullName() {
             film.setName(null);
             Set<ConstraintViolation<Film>> violation = validator.validate(film);
-            assertTrue(violation.isEmpty());
+            assertFalse(violation.isEmpty()); // Ожидаем, что валидация не пройдет
         }
 
         @Test
-        void shouldPassValidationWithEmptyName() {
+        void shouldNotPassValidationWithEmptyName() {
             film.setName("");
             Set<ConstraintViolation<Film>> violation = validator.validate(film);
-            assertTrue(violation.isEmpty());
+            assertFalse(violation.isEmpty()); // Ожидаем, что валидация не пройдет
         }
     }
 
