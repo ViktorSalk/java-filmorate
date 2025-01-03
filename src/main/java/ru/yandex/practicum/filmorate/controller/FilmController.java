@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 
@@ -41,20 +40,21 @@ public class FilmController {
     }
 
     @PostMapping
-    public ResponseEntity<Film> createFilm(@Valid @RequestBody Film film) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public Film createFilm(@Valid @RequestBody Film film) {
         log.debug("Получен фильм для добавления: {}", film);
-        filmValidator(film); // Вызов валидации
+        filmValidator(film);
         film.setId(getNextId());
 
         films.put(film.getId(), film);
         log.info("Фильм {} успешно добавлен", film);
 
-        // Возвращаем статус 201 (Created) и добавленный фильм
-        return ResponseEntity.status(HttpStatus.CREATED).body(film);
+        return film;
     }
 
     @PutMapping
-    public ResponseEntity<Film> updateFilm(@Valid @RequestBody Film film) {
+    @ResponseStatus(HttpStatus.OK)
+    public Film updateFilm(@Valid @RequestBody Film film) {
         if (film.getId() == null) {
             log.error("Не введен Id фильма");
             throw new ValidationException("id фильма не может быть пустым");
@@ -62,7 +62,6 @@ public class FilmController {
         if (films.containsKey(film.getId())) {
             Film oldFilm = films.get(film.getId());
 
-            // Обновляем данные фильма
             oldFilm.setName(film.getName());
             log.info("Название фильма {} изменено", oldFilm);
             oldFilm.setDescription(film.getDescription());
@@ -72,8 +71,7 @@ public class FilmController {
             oldFilm.setDuration(film.getDuration());
             log.info("Длительность фильма {} изменена", oldFilm);
 
-            // Возвращаем статус 200 (OK) и обновленный фильм
-            return ResponseEntity.ok(oldFilm);
+            return oldFilm;
         }
         log.error("Фильм с id = {} не найден", film.getId());
         throw new UserNotFoundException("Фильм с id = " + film.getId() + " не найден");

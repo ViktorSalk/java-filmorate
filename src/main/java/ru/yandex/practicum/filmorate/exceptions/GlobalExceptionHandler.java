@@ -10,13 +10,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(ValidationException ex) {
-        return new ErrorResponse(ex.getMessage());
+    public ErrorResponse handleValidationException(ValidationException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleUserNotFoundException(UserNotFoundException ex) {
-        return new ErrorResponse(ex.getMessage());
+    public ErrorResponse handleUserNotFoundException(UserNotFoundException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 }

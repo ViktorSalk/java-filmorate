@@ -111,8 +111,15 @@ public class FilmControllerTests {
         }
 
         @Test
-        void shouldPassValidationWithNegativeDuration() {
+        void shouldNotPassValidationWithNegativeDuration() {
             film.setDuration(-1);
+            Set<ConstraintViolation<Film>> violation = validator.validate(film);
+            assertFalse(violation.isEmpty()); // Отрицательная длительность не должна проходить проверку
+        }
+
+        @Test
+        void shouldPassValidationWithZeroDuration() {
+            film.setDuration(0);
             Set<ConstraintViolation<Film>> violation = validator.validate(film);
             assertTrue(violation.isEmpty());
         }
