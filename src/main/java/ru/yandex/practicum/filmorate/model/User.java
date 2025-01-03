@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -27,10 +26,11 @@ public class User {
     public User() {
     }
 
-    @PostConstruct
-    private void init() {
-        if (name == null || name.isBlank()) {
-            name = login;
+    public void setLogin(String login) {
+        this.login = login;
+        // Устанавливаем name, если он не задан
+        if (this.name == null || this.name.isBlank()) {
+            this.name = login; // Или любое другое значение по умолчанию
         }
     }
 }
