@@ -43,7 +43,6 @@ public class FilmController {
     @ResponseStatus(HttpStatus.CREATED)
     public Film createFilm(@Valid @RequestBody Film film) {
         log.debug("Получен фильм для добавления: {}", film);
-        filmValidator(film);
         film.setId(getNextId());
 
         films.put(film.getId(), film);
@@ -75,25 +74,5 @@ public class FilmController {
         }
         log.error("Фильм с id = {} не найден", film.getId());
         throw new UserNotFoundException("Фильм с id = " + film.getId() + " не найден");
-    }
-
-    private void filmValidator(@RequestBody Film film) {
-
-        if (film.getName() == null || film.getName().isBlank()) {
-            log.error("Название фильма не заполнено при добавлении");
-            throw new ValidationException("Название фильма не может быть пустым");
-        }
-        if (film.getDescription().length() > 200) {
-            log.error("Описание фильма слишком длинное при добавлении");
-            throw new ValidationException("Слишком длинное описание");
-        }
-        if (film.getReleaseDate().isBefore(dayOfCreationCinema)) {
-            log.error("Указана неверная дата выходи фильма при добавлении");
-            throw new ValidationException("Указана неверная дата");
-        }
-        if (film.getDuration() < 0) {
-            log.error("При добавлении фильма длительность указана меньше 0");
-            throw new ValidationException("Длительность фильма не может быть меньше 0");
-        }
     }
 }
