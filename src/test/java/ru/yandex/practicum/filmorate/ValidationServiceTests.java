@@ -40,6 +40,7 @@ public class ValidationServiceTests {
         user.setEmail("volandesy@gmail.com");
         user.setLogin("Voland");
         user.setName("Volandesy");
+        user.setFriends(new HashSet<>());
     }
 
     @Nested // тесты фильма
@@ -152,14 +153,14 @@ public class ValidationServiceTests {
             user1.setId(1L);
             user2.setId(2L);
 
-            Set<User> friends = new HashSet<>();
-            friends.add(user2);
+            Set<Long> friends = new HashSet<>();
+            friends.add(2L);
             user1.setFriends(friends);
 
-            assertTrue(user1.getFriends().contains(user2));
+            assertTrue(user1.getFriends().contains(2L));
             assertEquals(1, user1.getFriends().size());
 
-            user1.getFriends().remove(user2);
+            user1.getFriends().remove(2L);
             assertEquals(0, user1.getFriends().size());
         }
 
@@ -173,14 +174,14 @@ public class ValidationServiceTests {
             user2.setId(2L);
             user3.setId(3L);
 
-            user1.setFriends(new HashSet<>(Arrays.asList(user2, user3)));
-            user3.setFriends(new HashSet<>(Arrays.asList(user2)));
+            user1.setFriends(new HashSet<>(Arrays.asList(2L, 3L)));
+            user3.setFriends(new HashSet<>(Arrays.asList(2L)));
 
-            Set<User> commonFriends = new HashSet<>(user1.getFriends());
+            Set<Long> commonFriends = new HashSet<>(user1.getFriends());
             commonFriends.retainAll(user3.getFriends());
 
             assertEquals(1, commonFriends.size());
-            assertTrue(commonFriends.contains(user2));
+            assertTrue(commonFriends.contains(2L));
         }
     }
 

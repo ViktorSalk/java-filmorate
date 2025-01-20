@@ -31,6 +31,7 @@ public class UserService {
 
     public void addFriend(Long id, Long friendId) {
         if (id.equals(friendId)) {
+            log.error("Id пользователя и id друга совпадают");
             throw new ValidationException("Id пользователя и id друга совпадают");
         }
         User user = userStorage.getUser(id);
@@ -45,44 +46,28 @@ public class UserService {
             throw new UserNotFoundException("Пользователь с id " + friendId + " не найден");
         }
 
-        Set<User> userSet = userStorage.getUserFriends(id);
-        if (userSet == null) {
-            userSet = new HashSet<>();
-        }
-        userSet.add(friend);
-        userStorage.updateUsersFriends(id, userSet);
+        user.getFriends().add(friendId);
+        friend.getFriends().add(id);
+
+        userStorage.updateUser(user);
+        userStorage.updateUser(friend);
         log.info("Друг добавлен с id: " + friendId);
     }
 
     public void deleteFriend(Long id, Long friendId) {
-        if (id.equals(friendId)) {
-            log.info("Id пользователя и id друга совпадают");
-            throw new ValidationException("Id пользователя и id друга совпадают");
-        }
         User user = userStorage.getUser(id);
         User friend = userStorage.getUser(friendId);
-        Set<User> userSet = userStorage.getUserFriends(id);
-        Set<User> friendSet = userStorage.getUserFriends(id);
-        if (userSet == null) {
-            userStorage.updateUsersFriends(user.getId(), null);
-            log.info("нет списка друзей");
+
+        if (user == null || friend == null) {
+            throw new UserNotFoundException("Пользователь не найден");
         }
-        if (friendSet == null) {
-            log.info("нет списка друзей");
-            userStorage.updateUsersFriends(friend.getId(), null);
-            return;
-        }
-        for (User user1 : userSet) {
-            if (user1.getId() == friendId) {
-                userSet.remove(friend);
-                friendSet.remove(user);
-                userStorage.updateUsersFriends(id, userSet);
-                userStorage.updateUsersFriends(friendId, friendSet);
-                log.info("Пользователь с id: " + friendId + "удален из списка");
-                return;
-            }
-        }
-        log.info("Пользователь с id: " + friendId + "Нет в списке id");
+
+        user.getFriends().remove(friendId);
+        friend.getFriends().remove(id);
+
+        userStorage.updateUser(user);
+        userStorage.updateUser(friend);
+        log.info("Друг удален с id: " + friendId);
     }
 
     public Collection<User> allIdFriends(Long id) {
@@ -91,24 +76,36 @@ public class UserService {
             log.error("Пользователь с id {} не найден", id);
             throw new UserNotFoundException("Пользователь с id " + id + " не найден");
         }
-        Set<User> friendsSet = userStorage.getUserFriends(id);
-        return friendsSet != null ? friendsSet : new HashSet<>();
+
+        List<User> friends = new ArrayList<>();
+        for (Long friendId : user.getFriends()) {
+            User friend = userStorage.getUser(friendId);
+            if (friend != null) {
+                friends.add(friend);
+            }
+        }
+        return friends;
     }
 
     public Collection<User> generalFriends(Long id, Long otherId) {
-        Collection<User> generalFriends = new ArrayList<>();
-        Set<User> users = userStorage.getUserFriends(id);
-        Set<User> otherUsers = userStorage.getUserFriends(otherId);
-        for (User user : users) {
-            for (User otherUser : otherUsers) {
-                if (user.getId() == otherUser.getId()) {
-                    generalFriends.add(otherUser);
-                    break;
-                }
+        User user = userStorage.getUser(id);
+        User otherUser = userStorage.getUser(otherId);
+
+        if (user == null || otherUser == null) {
+            throw new UserNotFoundException("Пользователь не найден");
+        }
+
+        Set<Long> commonFriendIds = new HashSet<>(user.getFriends());
+        commonFriendIds.retainAll(otherUser.getFriends());
+
+        List<User> commonFriends = new ArrayList<>();
+        for (Long friendId : commonFriendIds) {
+            User friend = userStorage.getUser(friendId);
+            if (friend != null) {
+                commonFriends.add(friend);
             }
         }
-        log.info("Возврат списка общих друзей");
-        return generalFriends;
+        return commonFriends;
     }
 
     public Map<Long, User> getAllUserMap() {
