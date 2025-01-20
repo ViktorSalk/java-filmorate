@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -33,6 +34,12 @@ public class UserController {
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
+        if (user.getId() == null) {
+            throw new ValidationException("id пользователя должен быть указан");
+        }
+        if (!userService.getAllUserMap().containsKey(user.getId())) {
+            throw new UserNotFoundException("Пользователь с id = " + user.getId() + " не найден");
+        }
         return userService.updateUser(user);
     }
 
