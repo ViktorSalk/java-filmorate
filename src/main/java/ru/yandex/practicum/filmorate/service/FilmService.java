@@ -34,41 +34,21 @@ public class FilmService {
     }
 
     public void addLike(Long userId, Long id) {
-        Map<Long, Film> allFilmsMap = filmStorage.getAllFilmsMap();
         Film film = filmStorage.getFilm(id);
         User user = userStorage.getUser(userId);
-        Set<Long> filmLikes = film.getIdUserLikes();
-        if (filmLikes == null) {
-            filmLikes = new HashSet<>();
-        }
-        if (filmLikes.contains(userId)) {
-            log.info("Пользователь с id: " + userId + "уже ставил лайк");
-            return;
-        }
-        filmLikes.add(userId);
-        film.setIdUserLikes(filmLikes);
-        allFilmsMap.put(film.getId(), film);
-        filmStorage.setAllFilmsMap(allFilmsMap);
-        log.info("Пользователь c id: " + userId + " поставил лайк");
+
+        film.getIdUserLikes().add(userId);
+        filmStorage.updateFilm(film);
+        log.info("Пользователь c id: {} поставил лайк фильму id: {}", userId, id);
     }
 
     public void deleteLike(Long userId, Long id) {
-        Map<Long, Film> allFilmsMap = filmStorage.getAllFilmsMap();
         Film film = filmStorage.getFilm(id);
         User user = userStorage.getUser(userId);
-        Set<Long> filmLikes = film.getIdUserLikes();
-        if (filmLikes == null) {
-            filmLikes = new HashSet<>();
-        }
-        if (!filmLikes.contains(userId)) {
-            log.info("Пользователь с id: " + userId + " нет в списке тех кто ставил лайк");
-            return;
-        }
-        filmLikes.remove(userId);
-        film.setIdUserLikes(filmLikes);
-        allFilmsMap.put(film.getId(), film);
-        filmStorage.setAllFilmsMap(allFilmsMap);
-        log.info("Пользователь c id: " + userId + " удалил лайк");
+
+        film.getIdUserLikes().remove(userId);
+        filmStorage.updateFilm(film);
+        log.info("Пользователь c id: {} удалил лайк у фильма id: {}", userId, id);
     }
 
     public Collection<Film> getPopularFilms(int count) {
