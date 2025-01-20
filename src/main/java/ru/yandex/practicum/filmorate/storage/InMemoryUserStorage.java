@@ -66,11 +66,14 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Set<User> getUserFriends(long id) {
-        return friendsMap.get(id);
+        return friendsMap.getOrDefault(id, new HashSet<>());
     }
 
     @Override
     public void updateUsersFriends(long id, Set<User> userSetFriends) {
+        if (!allUsers.containsKey(id)) {
+            throw new UserNotFoundException("Пользователь с id: " + id + " не найден");
+        }
         friendsMap.put(id, userSetFriends);
     }
 

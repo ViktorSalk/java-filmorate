@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.LikeComparator;
 import ru.yandex.practicum.filmorate.model.User;
@@ -34,12 +35,14 @@ public class FilmService {
     }
 
     public void addLike(Long userId, Long id) {
-        Film film = filmStorage.getFilm(id);
-        User user = userStorage.getUser(userId);
+        Film film = Optional.ofNullable(filmStorage.getFilm(id))
+                .orElseThrow(() -> new UserNotFoundException("Фильм с id: " + id + " не найден"));
+        User user = Optional.ofNullable(userStorage.getUser(userId))
+                .orElseThrow(() -> new UserNotFoundException("Фильм с id: " + userId + " не найден"));
 
         film.getIdUserLikes().add(userId);
         filmStorage.updateFilm(film);
-        log.info("Пользователь c id: {} поставил лайк фильму id: {}", userId, id);
+        log.info("Пользователь с id: {} добавил лайк фильму {}", userId, id);
     }
 
     public void deleteLike(Long userId, Long id) {
@@ -52,15 +55,12 @@ public class FilmService {
     }
 
     public Collection<Film> getPopularFilms(int count) {
-        Collection<Film> filmSet = filmStorage.getAllFilms();
-        TreeSet<Film> filmTreeSet = new TreeSet<>(likeComparator);
-        filmTreeSet.addAll(filmSet);
-        List<Film> filmList = new ArrayList<>(filmTreeSet);
-
-        if (count > filmList.size()) {
-            count = filmList.size();
-        }
-        return filmList.subList(0, count);
+        List<Film> films = new ArrayList<>(filmStorage.getAllFilms());
+        films.sort((f1, f2) -> Integer.compare(
+                f2.getIdUserLikes().size(),
+                f1.getIdUserLikes().size()
+        ));
+        return films.subList(0, Math.min(count, films.size()));
     }
 
     public Map<Long, Film> getAllMapFilms() {
