@@ -35,19 +35,36 @@ public class FilmService {
     }
 
     public void addLike(Long userId, Long id) {
-        Film film = Optional.ofNullable(filmStorage.getFilm(id))
-                .orElseThrow(() -> new UserNotFoundException("Фильм с id: " + id + " не найден"));
-        User user = Optional.ofNullable(userStorage.getUser(userId))
-                .orElseThrow(() -> new UserNotFoundException("Фильм с id: " + userId + " не найден"));
+        Film film = filmStorage.getFilm(id);
+        if (film == null) {
+            log.error("Фильм с id: {} не найден", id);
+            throw new UserNotFoundException("Фильм с id: " + id + " не найден");
+        }
+
+        User user = userStorage.getUser(userId);
+        if (user == null) {
+            log.error("Пользователь с id: {} не найден", userId);
+            throw new UserNotFoundException("Пользователь с id: " + userId + " не найден");
+        }
 
         film.getIdUserLikes().add(userId);
         filmStorage.updateFilm(film);
         log.info("Пользователь с id: {} добавил лайк фильму {}", userId, id);
     }
 
+
     public void deleteLike(Long userId, Long id) {
         Film film = filmStorage.getFilm(id);
+        if (film == null) {
+            log.error("Фильм с id: {} не найден", id);
+            throw new UserNotFoundException("Фильм с id: " + id + " не найден");
+        }
+
         User user = userStorage.getUser(userId);
+        if (user == null) {
+            log.error("Пользователь с id: {} не найден", userId);
+            throw new UserNotFoundException("Пользователь с id: " + userId + " не найден");
+        }
 
         film.getIdUserLikes().remove(userId);
         filmStorage.updateFilm(film);

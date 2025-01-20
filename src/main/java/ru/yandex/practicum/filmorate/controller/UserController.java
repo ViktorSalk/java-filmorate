@@ -1,16 +1,16 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
-import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
-
-import jakarta.validation.Valid;
 import ru.yandex.practicum.filmorate.service.UserService;
 
+import jakarta.validation.Valid;
 import java.util.*;
 
 @RestController
@@ -21,7 +21,6 @@ public class UserController {
     private final Set<String> logins = new HashSet<>();
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private UserService userService;
-
 
     private Long getNextId() {
         long currentMaxId = users.keySet()
@@ -110,8 +109,12 @@ public class UserController {
 
     @GetMapping("/{id}/friends")
     public Collection<User> allIdFriends(@PathVariable long id) {
-        log.info("Идет процесс получения друзей у пользователя с id: " + id);
-        return userService.allIdFriends(id);
+        try {
+            return userService.allIdFriends(id);
+        } catch (UserNotFoundException e) {
+            log.error("Пользователь с id {} не найден", id);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")

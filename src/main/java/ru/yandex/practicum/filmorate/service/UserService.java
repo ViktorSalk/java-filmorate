@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -30,23 +31,26 @@ public class UserService {
 
     public void addFriend(Long id, Long friendId) {
         if (id.equals(friendId)) {
-            log.info("Id пользователя и id друга совпадают");
             throw new ValidationException("Id пользователя и id друга совпадают");
         }
         User user = userStorage.getUser(id);
+        if (user == null) {
+            log.error("Пользователь с id {} не найден", id);
+            throw new UserNotFoundException("Пользователь с id " + id + " не найден");
+        }
+
         User friend = userStorage.getUser(friendId);
+        if (friend == null) {
+            log.error("Пользователь с id {} не найден", friendId);
+            throw new UserNotFoundException("Пользователь с id " + friendId + " не найден");
+        }
+
         Set<User> userSet = userStorage.getUserFriends(id);
-        Set<User> friendSet = userStorage.getUserFriends(friendId);
         if (userSet == null) {
             userSet = new HashSet<>();
         }
-        if (friendSet == null) {
-            friendSet = new HashSet<>();
-        }
         userSet.add(friend);
-        friendSet.add(user);
         userStorage.updateUsersFriends(id, userSet);
-        userStorage.updateUsersFriends(friendId, friendSet);
         log.info("Друг добавлен с id: " + friendId);
     }
 
@@ -83,11 +87,12 @@ public class UserService {
 
     public Collection<User> allIdFriends(Long id) {
         User user = userStorage.getUser(id);
-        Set<User> friendsSet = userStorage.getUserFriends(id);
-        if (friendsSet == null) {
-            friendsSet = new HashSet<>();
+        if (user == null) {
+            log.error("Пользователь с id {} не найден", id);
+            throw new UserNotFoundException("Пользователь с id " + id + " не найден");
         }
-        return friendsSet;
+        Set<User> friendsSet = userStorage.getUserFriends(id);
+        return friendsSet != null ? friendsSet : new HashSet<>();
     }
 
     public Collection<User> generalFriends(Long id, Long otherId) {
