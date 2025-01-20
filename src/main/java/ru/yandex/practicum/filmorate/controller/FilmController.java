@@ -3,10 +3,13 @@ package ru.yandex.practicum.filmorate.controller;
 import org.springframework.http.HttpStatus;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+
+import java.util.Collection;
+
+import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
 import jakarta.validation.Valid;
@@ -20,10 +23,10 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-
     private final Map<Long, Film> films = new HashMap<>();
     private final LocalDate dayOfCreationCinema = LocalDate.of(1895, 12, 28);
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
+    private FilmService filmService;
 
     private Long getNextId() {
         long currentMaxId = films.keySet()
@@ -74,5 +77,23 @@ public class FilmController {
         }
         log.error("Фильм с id = {} не найден", film.getId());
         throw new UserNotFoundException("Фильм с id = " + film.getId() + " не найден");
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable long userId, @PathVariable long id) {
+        log.info("Добавлен лайк пользователем с id: " + userId + ". К фильму с id: " + id);
+        filmService.addLike(userId, id);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable long userId, @PathVariable long id) {
+        filmService.deleteLike(userId, id);
+        log.info("Удален лайк пользователем с id: " + userId + ". К фильму с id: " + id);
+    }
+
+    @GetMapping("/popular")
+    public Collection<Film> getPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count) {
+        log.info("Получен список популярных фильмов");
+        return filmService.getPopularFilms(count);
     }
 }

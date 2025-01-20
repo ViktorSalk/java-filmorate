@@ -4,6 +4,8 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class User {
@@ -32,5 +34,15 @@ public class User {
         if (this.name == null || this.name.isBlank()) {
             this.name = login; // Или любое другое значение по умолчанию
         }
+    }
+
+    private Set<User> friends = new HashSet<>();
+
+    public Set<User> getFriends() {
+        return friends;
+    }
+
+    public void setFriends(Set<User> friends) {
+        this.friends = friends;
     }
 }

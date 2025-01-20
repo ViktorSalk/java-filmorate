@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 
 import jakarta.validation.Valid;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.*;
 
@@ -19,6 +20,8 @@ public class UserController {
     private final Set<String> emails = new HashSet<>();
     private final Set<String> logins = new HashSet<>();
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
+    private UserService userService;
+
 
     private Long getNextId() {
         long currentMaxId = users.keySet()
@@ -91,5 +94,29 @@ public class UserController {
         }
         log.error("Пользователь с id {} не найден", newUser.getId());
         throw new UserNotFoundException("Пользователь с id =" + newUser.getId() + " не найден");
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("Пошел процесс добавления друга с id:" + friendId + ". Пользователем id:" + id);
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("Пошел процесс удаления друга с id:" + friendId + ". Пользователем id:" + id);
+        userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> allIdFriends(@PathVariable long id) {
+        log.info("Идет процесс получения друзей у пользователя с id: " + id);
+        return userService.allIdFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> generalFriends(@PathVariable long id, @PathVariable long otherId) {
+        log.info("Идет процесс получения общих друзей у пользователя с id: " + id + ". C пользователя с id: " + otherId);
+        return userService.generalFriends(id, otherId);
     }
 }
