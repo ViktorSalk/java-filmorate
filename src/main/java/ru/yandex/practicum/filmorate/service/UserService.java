@@ -8,7 +8,11 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -25,8 +29,9 @@ public class UserService {
         return userStorage.addUser(postUser);
     }
 
-    public User updateUser(User putUser) {
-        return userStorage.updateUser(putUser);
+    public User updateUser(User user) {
+        userStorage.getUser(user.getId());
+        return userStorage.updateUser(user);
     }
 
     public void addFriend(Long id, Long friendId) {
@@ -77,15 +82,12 @@ public class UserService {
             throw new UserNotFoundException("Пользователь с id " + id + " не найден");
         }
 
-        List<User> friends = new ArrayList<>();
-        for (Long friendId : user.getFriends()) {
-            User friend = userStorage.getUser(friendId);
-            if (friend != null) {
-                friends.add(friend);
-            }
-        }
-        return friends;
+        return user.getFriends().stream()
+                .map(userStorage::getUser)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
+
 
     public Collection<User> generalFriends(Long id, Long otherId) {
         User user = userStorage.getUser(id);
@@ -98,17 +100,9 @@ public class UserService {
         Set<Long> commonFriendIds = new HashSet<>(user.getFriends());
         commonFriendIds.retainAll(otherUser.getFriends());
 
-        List<User> commonFriends = new ArrayList<>();
-        for (Long friendId : commonFriendIds) {
-            User friend = userStorage.getUser(friendId);
-            if (friend != null) {
-                commonFriends.add(friend);
-            }
-        }
-        return commonFriends;
-    }
-
-    public Map<Long, User> getAllUserMap() {
-        return userStorage.getCollectionAllUsers();
+        return commonFriendIds.stream()
+                .map(userStorage::getUser)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }

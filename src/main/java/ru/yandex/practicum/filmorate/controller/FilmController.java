@@ -1,23 +1,26 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.Collection;
-
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-
-import jakarta.validation.Valid;
-
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/films")
@@ -40,14 +43,6 @@ public class FilmController {
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
-        if (film.getId() == null) {
-            log.error("Не введен Id фильма");
-            throw new ValidationException("id фильма не может быть пустым");
-        }
-        if (!filmService.getAllMapFilms().containsKey(film.getId())) {
-            log.error("Фильм с id {} не найден", film.getId());
-            throw new UserNotFoundException("Фильм с id = " + film.getId() + " не найден");
-        }
         return filmService.updateFilm(film);
     }
 
@@ -69,11 +64,5 @@ public class FilmController {
     public Collection<Film> getPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count) {
         log.info("Получен список популярных фильмов");
         return filmService.getPopularFilms(count);
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleUserNotFound(final UserNotFoundException e) {
-        return Map.of("error", e.getMessage());
     }
 }

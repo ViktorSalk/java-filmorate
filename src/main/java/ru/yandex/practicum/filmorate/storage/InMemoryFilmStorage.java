@@ -1,21 +1,26 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class InMemoryFilmStorage implements FilmStorage {
 
-    private Map<Long, Film> allFilms = new HashMap<>();
+    private final Map<Long, Film> allFilms = new HashMap<>();
 
     @Override
-    public Collection<Film> getAllFilms() {
-        return allFilms.values();
+    public List<Film> getAllFilms() {
+        return new ArrayList<>(allFilms.values());
     }
 
     @Override
@@ -34,11 +39,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         return putFilm;
     }
 
-    @Override
-    public void setAllFilmsMap(Map<Long, Film> allFilmsMap) {
-        allFilms = allFilmsMap;
-    }
-
     private long getNextId() {
         long currentMaxId = allFilms.keySet()
                 .stream()
@@ -46,11 +46,6 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
-    }
-
-    @Override
-    public Map<Long, Film> getAllFilmsMap() {
-        return allFilms;
     }
 
     @Override

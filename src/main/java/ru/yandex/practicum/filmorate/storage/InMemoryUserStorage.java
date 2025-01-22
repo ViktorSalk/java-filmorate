@@ -1,43 +1,26 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class InMemoryUserStorage implements UserStorage {
 
-    private Map<Long, User> allUsers = new HashMap<>();
-
-    private Map<Long, Set<User>> friendsMap = new HashMap<>();
+    private final Map<Long, User> allUsers = new HashMap<>();
 
     @Override
-    public void setFriendsMap(Map<Long, Set<User>> friendsMap) {
-        this.friendsMap = friendsMap;
-    }
-
-    @Override
-    public Map<Long, User> getCollectionAllUsers() {
-        return allUsers;
-    }
-
-    @Override
-    public Map<Long, Set<User>> getFriendsMap() {
-        return friendsMap;
-    }
-
-    @Override
-    public void setCollectionAllUsers(Map<Long, User> allUsers1) {
-        allUsers = allUsers1;
-    }
-
-    @Override
-    public Collection<User> getAllUsers() {
-        return allUsers.values();
+    public List<User> getAllUsers() {
+        return new ArrayList<>(allUsers.values());
     }
 
     @Override
@@ -62,19 +45,6 @@ public class InMemoryUserStorage implements UserStorage {
             throw new UserNotFoundException("Пользователь с id " + id + " не найден");
         }
         return user;
-    }
-
-    @Override
-    public Set<User> getUserFriends(long id) {
-        return friendsMap.getOrDefault(id, new HashSet<>());
-    }
-
-    @Override
-    public void updateUsersFriends(long id, Set<User> userSetFriends) {
-        if (!allUsers.containsKey(id)) {
-            throw new UserNotFoundException("Пользователь с id: " + id + " не найден");
-        }
-        friendsMap.put(id, userSetFriends);
     }
 
     private long getNextId() {
