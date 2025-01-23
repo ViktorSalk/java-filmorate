@@ -8,8 +8,8 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,7 +21,7 @@ public class UserService {
 
     private final UserStorage userStorage;
 
-    public Collection<User> getAllUsers() {
+    public List<User> getAllUsers() {
         return userStorage.getAllUsers();
     }
 
@@ -75,7 +75,7 @@ public class UserService {
         log.info("Друг удален с id: " + friendId);
     }
 
-    public Collection<User> allIdFriends(Long id) {
+    public List<User> allIdFriends(Long id) {
         User user = userStorage.getUser(id);
         if (user == null) {
             log.error("Пользователь с id {} не найден", id);
@@ -89,7 +89,7 @@ public class UserService {
     }
 
 
-    public Collection<User> generalFriends(Long id, Long otherId) {
+    public List<User> generalFriends(Long id, Long otherId) {
         User user = userStorage.getUser(id);
         User otherUser = userStorage.getUser(otherId);
 

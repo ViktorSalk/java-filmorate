@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,8 @@ public class ServiceTests {
 
     @Nested
     class FriendshipTests {
-        @Test // Тесты для работы с друзьями
+        @Test
+            // Тесты для работы с друзьями
         void testFriendshipOperations() {
             User user1 = new User();
             user1.setEmail("user1@mail.com");
@@ -49,7 +51,8 @@ public class ServiceTests {
             assertFalse(userService.allIdFriends(user1.getId()).contains(user2));
         }
 
-        @Test // Тесты для работы с общими друзьями
+        @Test
+            // Тесты для работы с общими друзьями
         void testCommonFriends() {
             User user1 = new User();
             user1.setEmail("user1@mail.com");
@@ -83,15 +86,18 @@ public class ServiceTests {
 
     @Nested
     class FilmLikesTests {
-        @Test // Тесты для работы с лайками
-        void testLikeOperations() {
-            Film film = new Film();
+        private Film film;
+        private User user;
+
+        @BeforeEach
+        void setUp() {
+            film = new Film();
             film.setName("Test Film");
             film.setDescription("Test Description");
             film.setReleaseDate(LocalDate.of(2000, 1, 1));
             film.setDuration(120);
 
-            User user = new User();
+            user = new User();
             user.setEmail("user@mail.com");
             user.setLogin("user");
             user.setName("User");
@@ -99,7 +105,11 @@ public class ServiceTests {
 
             film = filmService.addFilm(film);
             user = userService.addUser(user);
+        }
 
+        @Test
+            // Тесты для работы с лайками
+        void testLikeOperations() {
             filmService.addLike(user.getId(), film.getId());
             assertTrue(film.getIdUserLikes().contains(user.getId()));
 
@@ -107,34 +117,20 @@ public class ServiceTests {
             assertFalse(film.getIdUserLikes().contains(user.getId()));
         }
 
-        @Test // Тесты для работы с популярными фильмами
+        @Test
+            // Тесты для работы с популярными фильмами
         void testPopularFilms() {
-            Film film1 = new Film();
-            film1.setName("Film 1");
-            film1.setDescription("Description 1");
-            film1.setReleaseDate(LocalDate.of(2000, 1, 1));
-            film1.setDuration(120);
-
             Film film2 = new Film();
             film2.setName("Film 2");
             film2.setDescription("Description 2");
             film2.setReleaseDate(LocalDate.of(2000, 1, 2));
             film2.setDuration(120);
-
-            User user = new User();
-            user.setEmail("user@mail.com");
-            user.setLogin("user");
-            user.setName("User");
-            user.setBirthday(LocalDate.of(1990, 1, 1));
-
-            film1 = filmService.addFilm(film1);
             film2 = filmService.addFilm(film2);
-            user = userService.addUser(user);
 
-            filmService.addLike(user.getId(), film1.getId());
+            filmService.addLike(user.getId(), film.getId());
 
             List<Film> popularFilms = new ArrayList<>(filmService.getPopularFilms(10));
-            assertEquals(film1.getId(), popularFilms.get(0).getId());
+            assertEquals(film.getId(), popularFilms.get(0).getId());
         }
     }
 }

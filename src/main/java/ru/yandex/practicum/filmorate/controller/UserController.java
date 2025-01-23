@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -29,7 +28,7 @@ public class UserController {
 
     @GetMapping
     public List<User> findAll() {
-        return new ArrayList<>(userService.getAllUsers());
+        return userService.getAllUsers();
     }
 
     @PostMapping
@@ -57,11 +56,11 @@ public class UserController {
 
     @GetMapping("/{id}/friends")
     public List<User> getFriends(@PathVariable Long id) {
-        return new ArrayList<>(userService.allIdFriends(id));
+        return userService.allIdFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
-        return new ArrayList<>(userService.generalFriends(id, otherId));
+        return userService.generalFriends(id, otherId);
     }
 }

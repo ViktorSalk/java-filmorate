@@ -8,12 +8,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    public static class FilmNotFoundException extends RuntimeException {
-        public FilmNotFoundException(String message) {
-            super(message);
-        }
-    }
-
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationException(ValidationException exception) {
@@ -23,12 +17,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleUserNotFoundException(UserNotFoundException exception) {
-        return new ErrorResponse(exception.getMessage());
-    }
-
-    @ExceptionHandler(FilmNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleFilmNotFoundException(FilmNotFoundException exception) {
         return new ErrorResponse(exception.getMessage());
     }
 }

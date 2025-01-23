@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -21,7 +20,7 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
-    public Collection<Film> getAllFilms() {
+    public List<Film> getAllFilms() {
         return filmStorage.getAllFilms();
     }
 
@@ -64,7 +63,7 @@ public class FilmService {
         log.info("Пользователь c id: {} удалил лайк у фильма id: {}", userId, id);
     }
 
-    public Collection<Film> getPopularFilms(int count) {
+    public List<Film> getPopularFilms(int count) {
         List<Film> films = new ArrayList<>(filmStorage.getAllFilms());
         films.sort((film, filmToCompare) -> Integer.compare(
                 filmToCompare.getIdUserLikes().size(),
