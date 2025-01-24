@@ -1,95 +1,66 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.springframework.http.HttpStatus;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.User;
-
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
-    private final Set<String> emails = new HashSet<>();
-    private final Set<String> logins = new HashSet<>();
+    private final UserService userService;
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
-
-    private Long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
-    }
 
     @GetMapping
     public List<User> findAll() {
-        return new ArrayList<>(users.values());
+        return userService.getAllUsers();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User addUser(@Valid @RequestBody User user) {
-        user.setId(getNextId());
-
-        if (logins.contains(user.getLogin())) {
-            log.error("Попытка добавить пользователя с существующим логином: {}", user.getLogin());
-            throw new ValidationException("Ошибка. Попытка добавить логин, который уже существует");
-        }
-
-        if (emails.contains(user.getEmail())) {
-            log.error("Попытка добавить пользователя с существующим email: {}", user.getEmail());
-            throw new ValidationException("Ошибка. Email уже существует");
-        }
-
-        users.put(user.getId(), user);
-        emails.add(user.getEmail());
-        logins.add(user.getLogin());
-        log.info("Пользователь добавлен");
-        return user;
+        return userService.addUser(user);
     }
 
     @PutMapping
-    public User updateUser(@Valid @RequestBody User newUser) {
-        if (newUser.getId() == null) {
-            log.error("Не введен id пользователя при изменении");
-            throw new ValidationException("id пользователя должен быть указан");
-        }
+    public User updateUser(@Valid @RequestBody User user) {
+        return userService.updateUser(user);
+    }
 
-        if (users.containsKey(newUser.getId())) {
-            User oldUser = users.get(newUser.getId());
+    @PutMapping("/{id}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.addFriend(id, friendId);
+    }
 
-            // Удаляем старый адрес электронной почты и логин из наборов
-            emails.remove(oldUser.getEmail());
-            logins.remove(oldUser.getLogin());
+    @DeleteMapping("/{id}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.deleteFriend(id, friendId);
+    }
 
-            // Проверяем, не конфликтуют ли новые адрес электронной почты и логин
-            if (emails.contains(newUser.getEmail())) {
-                throw new ValidationException("Email уже существует");
-            }
-            if (logins.contains(newUser.getLogin())) {
-                throw new ValidationException("Логин уже существует");
-            }
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable Long id) {
+        return userService.allIdFriends(id);
+    }
 
-            oldUser.setEmail(newUser.getEmail());
-            oldUser.setLogin(newUser.getLogin());
-            oldUser.setName(newUser.getName());
-            oldUser.setBirthday(newUser.getBirthday());
-
-            // Добавляем новый Email и Логин
-            emails.add(newUser.getEmail());
-            logins.add(newUser.getLogin());
-
-            return oldUser;
-        }
-        log.error("Пользователь с id {} не найден", newUser.getId());
-        throw new UserNotFoundException("Пользователь с id =" + newUser.getId() + " не найден");
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+        return userService.generalFriends(id, otherId);
     }
 }

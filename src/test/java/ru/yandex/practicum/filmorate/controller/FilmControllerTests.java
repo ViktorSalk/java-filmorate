@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -18,7 +18,10 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.time.LocalDate;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class FilmControllerTests {
@@ -40,6 +43,7 @@ public class FilmControllerTests {
     @BeforeEach
     void setUp() {
         film = new Film();
+        film.setId(1L); // ID может быть любым
         film.setName("film");
         film.setDescription(correctDescription);
         film.setReleaseDate(LocalDate.of(1985, 12, 28));

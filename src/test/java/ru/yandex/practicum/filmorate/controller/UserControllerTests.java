@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -12,7 +12,8 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 public class UserControllerTests {
@@ -25,6 +26,7 @@ public class UserControllerTests {
     @BeforeEach
     void setUp() {
         user = new User();
+        user.setId(1L); // ID может быть любым
         user.setName("name");
         user.setEmail("user@mail.ru");
         user.setLogin("login");

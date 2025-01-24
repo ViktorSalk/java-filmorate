@@ -1,27 +1,32 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-import jakarta.validation.constraints.*;
 import ru.yandex.practicum.filmorate.validation.ReleaseDateValidation;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class Film {
     private Long id;
 
-    @NotBlank(message = "Название фильма не может быть пустым")
+    @NotBlank
     private String name;
 
-    @NotBlank(message = "Описание фильма не может быть пустым")
-    @Size(max = 200, message = "Максимальная длина описания — 200 символов")
+    @NotBlank
+    @Size(max = 200)
     private String description;
 
-    @NotNull(message = "Дата выхода не может быть пустой")
-    @ReleaseDateValidation // Кастомная аннотация валидации
+    @NotNull
+    @ReleaseDateValidation(message = "Release date cannot be earlier than December 28, 1895")
     private LocalDate releaseDate;
 
-    @NotNull(message = "Длительность не может быть пустой")
     @PositiveOrZero(message = "Длительность фильма должна быть больше или равна нулю")
     private Integer duration;
+    private Set<Long> idUserLikes = new HashSet<>();
 }

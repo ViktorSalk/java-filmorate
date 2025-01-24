@@ -1,36 +1,37 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class User {
     private Long id;
 
-    @NotBlank(message = "Email не может быть пустым")
-    @Email(message = "Email должен соответствовать формату")
+    @NotBlank
+    @Email
     private String email;
 
-    @NotBlank(message = "Login не может быть пустым")
-    @Pattern(regexp = "^[^\\s]+$", message = "Login не должен содержать пробелы")
+    @NotBlank
+    @Pattern(regexp = "^\\S+$")
     private String login;
 
     private String name;
 
-    @NotNull(message = "Дата рождения не может быть пустой")
-    @PastOrPresent(message = "Дата рождения не может быть в будущем")
+    @NotNull
+    @PastOrPresent
     private LocalDate birthday;
 
-    public User() {
-    }
+    private Set<Long> friends = new HashSet<>();
 
-    public void setLogin(String login) {
-        this.login = login;
-        // Устанавливаем name, если он не задан
-        if (this.name == null || this.name.isBlank()) {
-            this.name = login; // Или любое другое значение по умолчанию
-        }
+    public void setName(String name) {
+        this.name = (name == null || name.isBlank()) ? this.login : name;
     }
 }
