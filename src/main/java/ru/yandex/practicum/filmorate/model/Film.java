@@ -29,4 +29,7 @@ public class Film {
     @PositiveOrZero(message = "Длительность фильма должна быть больше или равна нулю")
     private Integer duration;
     private Set<Long> idUserLikes = new HashSet<>();
+
+    private Mpa mpa;
+    private Set<Genre> genres = new HashSet<>();
 }
