@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -10,51 +9,61 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class InMemoryFilmStorage implements FilmStorage {
-
-    private final Map<Long, Film> allFilms = new HashMap<>();
+    private final Map<Long, Film> films = new HashMap<>();
+    private long nextId = 1;
 
     @Override
-    public List<Film> getAllFilms() {
-        return new ArrayList<>(allFilms.values());
+    public Film create(Film film) {
+        film.setId(nextId++);
+        films.put(film.getId(), film);
+        return film;
     }
 
     @Override
-    public Film addFilm(Film postFilm) {
-        long id = getNextId();
-        postFilm.setId(id);
-        allFilms.put(postFilm.getId(), postFilm);
-        log.info("Фильм добавлен в коллекцию: " + postFilm);
-        return postFilm;
+    public Film update(Film film) {
+        if (!films.containsKey(film.getId())) {
+            throw new UserNotFoundException("Film not found: " + film.getId());
+        }
+        films.put(film.getId(), film);
+        return film;
     }
 
     @Override
-    public Film updateFilm(Film putFilm) {
-        allFilms.put(putFilm.getId(), putFilm);
-        log.info("Фильм обновлен в коллекции: " + putFilm);
-        return putFilm;
-    }
-
-    private long getNextId() {
-        long currentMaxId = allFilms.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    public List<Film> getAll() {
+        return new ArrayList<>(films.values());
     }
 
     @Override
-    public Film getFilm(Long id) {
-        Film film = allFilms.get(id);
+    public Film get(Long id) {
+        Film film = films.get(id);
         if (film == null) {
-            log.info("Нет фильма с таким id: " + id);
-            throw new UserNotFoundException("Нет фильма с таким id: " + id);
+            throw new UserNotFoundException("Film not found: " + id);
         }
         return film;
+    }
+
+    @Override
+    public void addLike(Long filmId, Long userId) {
+        Film film = get(filmId);
+        film.getLikes().add(userId);
+    }
+
+    @Override
+    public void deleteLike(Long filmId, Long userId) {
+        Film film = get(filmId);
+        film.getLikes().remove(userId);
+    }
+
+    @Override
+    public List<Film> getPopular(int count) {
+        return films.values().stream()
+                .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
+                .limit(count)
+                .collect(Collectors.toList());
     }
 }

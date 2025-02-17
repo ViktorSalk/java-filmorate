@@ -14,6 +14,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.MpaDto;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -36,41 +37,45 @@ public class FilmControllerTests {
     private Validator validator;
 
     private Film film;
-    private final String correctDescription = String.valueOf(200);
-    private final String incorrectDescription = String.valueOf(201);
-    private final LocalDate correctDate = LocalDate.of(1985, 12, 28);
+    private final String correctDescription = "Test description";
+    private final String incorrectDescription = "a".repeat(201);
+    private final LocalDate correctDate = LocalDate.of(1895, 12, 28);
 
     @BeforeEach
     void setUp() {
         film = new Film();
         film.setId(1L); // ID может быть любым
-        film.setName("film");
+        film.setName("Test Film");
         film.setDescription(correctDescription);
         film.setReleaseDate(LocalDate.of(1985, 12, 28));
         film.setDuration(60);
-    }
 
+        MpaDto mpa = new MpaDto();
+        mpa.setId(1);
+        mpa.setName("G");
+        film.setMpa(mpa);
+    }
 
     @Nested
     class NameTests { // Валидация названия
         @Test
         void shouldPassValidationWithCorrectName() {
-            Set<ConstraintViolation<Film>> violation = validator.validate(film);
-            assertTrue(violation.isEmpty());
+            Set<ConstraintViolation<Film>> violations = validator.validate(film);
+            assertTrue(violations.isEmpty());
         }
 
         @Test
         void shouldNotPassValidationWithNullName() {
             film.setName(null);
-            Set<ConstraintViolation<Film>> violation = validator.validate(film);
-            assertFalse(violation.isEmpty()); // Ожидаем, что валидация не пройдет
+            Set<ConstraintViolation<Film>> violations = validator.validate(film);
+            assertFalse(violations.isEmpty()); // Ожидаем, что валидация не пройдет
         }
 
         @Test
         void shouldNotPassValidationWithEmptyName() {
             film.setName("");
-            Set<ConstraintViolation<Film>> violation = validator.validate(film);
-            assertFalse(violation.isEmpty()); // Ожидаем, что валидация не пройдет
+            Set<ConstraintViolation<Film>> violations = validator.validate(film);
+            assertFalse(violations.isEmpty()); // Ожидаем, что валидация не пройдет
         }
     }
 
@@ -78,15 +83,15 @@ public class FilmControllerTests {
     class DescriptionTests { // Валидация описания
         @Test
         void shouldPassValidationWithCorrectDescription() {
-            Set<ConstraintViolation<Film>> violation = validator.validate(film);
-            assertTrue(violation.isEmpty());
+            Set<ConstraintViolation<Film>> violations = validator.validate(film);
+            assertTrue(violations.isEmpty());
         }
 
         @Test
-        void shouldPassValidationWithIncorrectDescription() {
+        void shouldNotPassValidationWithTooLongDescription() {
             film.setDescription(incorrectDescription);
-            Set<ConstraintViolation<Film>> violation = validator.validate(film);
-            assertTrue(violation.isEmpty());
+            Set<ConstraintViolation<Film>> violations = validator.validate(film);
+            assertFalse(violations.isEmpty());
         }
     }
 
@@ -94,38 +99,38 @@ public class FilmControllerTests {
     class DateTests { // Валидация даты
         @Test
         void shouldPassValidationWithCorrectDate() {
-            Set<ConstraintViolation<Film>> violation = validator.validate(film);
-            assertTrue(violation.isEmpty());
+            Set<ConstraintViolation<Film>> violations = validator.validate(film);
+            assertTrue(violations.isEmpty());
         }
 
         @Test
-        void shouldPassValidationWithDateBeforeCorrectDate() {
+        void shouldNotPassValidationWithTooEarlyDate() {
             film.setReleaseDate(correctDate.minusDays(1));
-            Set<ConstraintViolation<Film>> violation = validator.validate(film);
-            assertTrue(violation.isEmpty());
+            Set<ConstraintViolation<Film>> violations = validator.validate(film);
+            assertFalse(violations.isEmpty());
         }
     }
 
     @Nested
     class DurationTests { // Валидация длительности
         @Test
-        void shouldPassValidationWithCorrectDuration() {
-            Set<ConstraintViolation<Film>> violation = validator.validate(film);
-            assertTrue(violation.isEmpty());
+        void shouldPassValidationWithPositiveDuration() {
+            Set<ConstraintViolation<Film>> violations = validator.validate(film);
+            assertTrue(violations.isEmpty());
         }
 
         @Test
         void shouldNotPassValidationWithNegativeDuration() {
             film.setDuration(-1);
-            Set<ConstraintViolation<Film>> violation = validator.validate(film);
-            assertFalse(violation.isEmpty()); // Отрицательная длительность не должна проходить проверку
+            Set<ConstraintViolation<Film>> violations = validator.validate(film);
+            assertFalse(violations.isEmpty()); // Отрицательная длительность не должна проходить проверку
         }
 
         @Test
-        void shouldPassValidationWithZeroDuration() {
+        void shouldNotPassValidationWithZeroDuration() {
             film.setDuration(0);
-            Set<ConstraintViolation<Film>> violation = validator.validate(film);
-            assertTrue(violation.isEmpty());
+            Set<ConstraintViolation<Film>> violations = validator.validate(film);
+            assertFalse(violations.isEmpty());
         }
     }
 
@@ -138,7 +143,7 @@ public class FilmControllerTests {
                     film,
                     Film.class);
 
-            assertEquals(HttpStatus.CREATED, response.getStatusCode()); // Ожидаем статус 201
+            assertEquals(HttpStatus.CREATED, response.getStatusCode());
             assertNotNull(response.getBody());
             assertNotNull(response.getBody().getId());
         }
