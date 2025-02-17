@@ -2,34 +2,38 @@ package ru.yandex.practicum.filmorate.model;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FilmModelTests {
     @Test // Тест на получение жанров фильма
     void testFilmGenres() {
         Film film = new Film();
-        film.getGenres().add(Genre.COMEDY);
-        film.getGenres().add(Genre.DRAMA);
-        film.getGenres().add(Genre.CARTOON);
-        film.getGenres().add(Genre.THRILLER);
-        film.getGenres().add(Genre.DOCUMENTARY);
-        film.getGenres().add(Genre.ACTION);
+        GenreDto comedy = new GenreDto();
+        comedy.setId(1);
+        comedy.setName("Комедия");
 
-        assertEquals(6, film.getGenres().size());
-        assertTrue(film.getGenres().contains(Genre.COMEDY));
-        assertTrue(film.getGenres().contains(Genre.DRAMA));
-        assertTrue(film.getGenres().contains(Genre.CARTOON));
-        assertTrue(film.getGenres().contains(Genre.THRILLER));
-        assertTrue(film.getGenres().contains(Genre.DOCUMENTARY));
-        assertTrue(film.getGenres().contains(Genre.ACTION));
+        GenreDto drama = new GenreDto();
+        drama.setId(2);
+        drama.setName("Драма");
+
+        film.getGenres().add(comedy);
+        film.getGenres().add(drama);
+
+        assertEquals(2, film.getGenres().size());
+        assertTrue(film.getGenres().contains(comedy));
+        assertTrue(film.getGenres().contains(drama));
     }
 
     @Test // Тест на получение рейтинга фильма
     void testFilmMpa() {
         Film film = new Film();
-        film.setMpa(Mpa.PG13);
+        MpaDto mpa = new MpaDto();
+        mpa.setId(3);
+        mpa.setName("PG-13");
+        film.setMpa(mpa);
 
-        assertEquals(Mpa.PG13, film.getMpa());
+        assertEquals(3, film.getMpa().getId());
         assertEquals("PG-13", film.getMpa().getName());
     }
 }
