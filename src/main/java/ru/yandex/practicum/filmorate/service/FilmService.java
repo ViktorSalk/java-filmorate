@@ -1,74 +1,71 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.GenreDto;
+import ru.yandex.practicum.filmorate.model.MpaDto;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-
+    @Qualifier("filmDbStorage")
     private final FilmStorage filmStorage;
+    @Qualifier("userDbStorage")
     private final UserStorage userStorage;
 
     public List<Film> getAllFilms() {
-        return filmStorage.getAllFilms();
+        return filmStorage.getAll();
     }
 
-    public Film addFilm(Film postFilm) {
-        return filmStorage.addFilm(postFilm);
+    public Film createFilm(Film film) {
+        validateMpaAndGenres(film);
+        return filmStorage.create(film);
     }
 
     public Film updateFilm(Film film) {
-        filmStorage.getFilm(film.getId()); // проверяем наличие фильма
-        return filmStorage.updateFilm(film);
+        validateMpaAndGenres(film);
+        get(film.getId());
+        return filmStorage.update(film);
     }
 
-    private void validateFilmAndUser(Long filmId, Long userId) {
-        Film film = filmStorage.getFilm(filmId);
-        if (film == null) {
-            log.error("Фильм с id: {} не найден", filmId);
-            throw new UserNotFoundException("Фильм с id: " + filmId + " не найден");
-        }
-
-        User user = userStorage.getUser(userId);
-        if (user == null) {
-            log.error("Пользователь с id: {} не найден", userId);
-            throw new UserNotFoundException("Пользователь с id: " + userId + " не найден");
-        }
+    public Film get(Long id) {
+        return filmStorage.get(id);
     }
 
-    public void addLike(Long userId, Long id) {
-        validateFilmAndUser(id, userId);
-        Film film = filmStorage.getFilm(id);
-        film.getIdUserLikes().add(userId);
-        filmStorage.updateFilm(film);
-        log.info("Пользователь с id: {} добавил лайк фильму {}", userId, id);
+    public void addLike(Long filmId, Long userId) {
+        filmStorage.get(filmId);
+        userStorage.get(userId);
+        filmStorage.addLike(filmId, userId);
     }
 
-    public void deleteLike(Long userId, Long id) {
-        validateFilmAndUser(id, userId);
-        Film film = filmStorage.getFilm(id);
-        film.getIdUserLikes().remove(userId);
-        filmStorage.updateFilm(film);
-        log.info("Пользователь c id: {} удалил лайк у фильма id: {}", userId, id);
+    public void deleteLike(Long filmId, Long userId) {
+        filmStorage.get(filmId);
+        userStorage.get(userId);
+        filmStorage.deleteLike(filmId, userId);
     }
 
     public List<Film> getPopularFilms(int count) {
-        List<Film> films = new ArrayList<>(filmStorage.getAllFilms());
-        films.sort((film, filmToCompare) -> Integer.compare(
-                filmToCompare.getIdUserLikes().size(),
-                film.getIdUserLikes().size()
-        ));
-        return films.subList(0, Math.min(count, films.size()));
+        return filmStorage.getPopular(count);
+    }
+
+    private void validateMpaAndGenres(Film film) {
+        if (film.getMpa() == null || film.getMpa().getId() < 1 || film.getMpa().getId() > MpaDto.values().size()) {
+            throw new UserNotFoundException("Invalid MPA rating ID");
+        }
+
+        if (film.getGenres() != null) {
+            for (GenreDto genre : film.getGenres()) {
+                if (genre.getId() < 1 || genre.getId() > GenreDto.values().size()) {
+                    throw new UserNotFoundException("Invalid genre ID: " + genre.getId());
+                }
+            }
+        }
     }
 }
