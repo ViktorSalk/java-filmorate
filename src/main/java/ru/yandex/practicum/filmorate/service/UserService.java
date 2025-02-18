@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -38,14 +39,16 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) {
-        userStorage.get(userId);
-        userStorage.get(friendId);
+        if (!userStorage.exists(userId) || !userStorage.exists(friendId)) {
+            throw new UserNotFoundException("User not found");
+        }
         userStorage.addFriend(userId, friendId);
     }
 
     public void deleteFriend(Long userId, Long friendId) {
-        userStorage.get(userId);
-        userStorage.get(friendId);
+        if (!userStorage.exists(userId) || !userStorage.exists(friendId)) {
+            throw new UserNotFoundException("User not found");
+        }
         userStorage.deleteFriend(userId, friendId);
     }
 

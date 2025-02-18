@@ -13,11 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.GenreDto;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
@@ -36,13 +32,11 @@ public class FilmController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Film createFilm(@Valid @RequestBody Film film) {
-        validateMpaAndGenres(film);
         return filmService.createFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
-        validateMpaAndGenres(film);
         return filmService.updateFilm(film);
     }
 
@@ -64,19 +58,5 @@ public class FilmController {
     @GetMapping("/popular")
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
         return filmService.getPopularFilms(count);
-    }
-
-    private void validateMpaAndGenres(Film film) {
-        if (film.getMpa() == null || film.getMpa().getId() < 1 || film.getMpa().getId() > Mpa.values().length) {
-            throw new UserNotFoundException("Invalid MPA rating ID");
-        }
-
-        if (film.getGenres() != null) {
-            for (GenreDto genre : film.getGenres()) {
-                if (genre.getId() < 1 || genre.getId() > Genre.values().length) {
-                    throw new UserNotFoundException("Invalid genre ID: " + genre.getId());
-                }
-            }
-        }
     }
 }

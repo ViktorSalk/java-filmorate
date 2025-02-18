@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -20,9 +19,9 @@ import java.util.List;
 @Repository
 @Primary
 @RequiredArgsConstructor
-@Component
 @Qualifier("userDbStorage")
-public class UserDbStorage implements UserStorage {    private final JdbcTemplate jdbcTemplate;
+public class UserDbStorage implements UserStorage {
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public User create(User user) {
@@ -93,12 +92,18 @@ public class UserDbStorage implements UserStorage {    private final JdbcTemplat
     }
 
     @Override
-    public List<User> getCommonFriends(Long userId, Long friendId) {
+    public List<User> getCommonFriends(Long userId, Long otherId) {
         String sql = "SELECT u.* FROM users u " +
                 "JOIN friendships f1 ON u.user_id = f1.friend_id " +
                 "JOIN friendships f2 ON f1.friend_id = f2.friend_id " +
                 "WHERE f1.user_id = ? AND f2.user_id = ?";
-        return jdbcTemplate.query(sql, this::mapRowToUser, userId, friendId);
+        return jdbcTemplate.query(sql, this::mapRowToUser, userId, otherId);
+    }
+
+    @Override
+    public boolean exists(Long userId) {
+        String sql = "SELECT COUNT(*) FROM users WHERE user_id = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, userId) > 0;
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
