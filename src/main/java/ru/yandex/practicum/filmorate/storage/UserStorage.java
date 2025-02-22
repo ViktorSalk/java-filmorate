@@ -5,11 +5,21 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.List;
 
 public interface UserStorage {
-    List<User> getAllUsers();
+    User create(User user);
 
-    User addUser(User postUser);
+    User update(User user);
 
-    User updateUser(User putUser);
+    List<User> getAll();
 
-    User getUser(long id);
+    User get(Long id);
+
+    void addFriend(Long userId, Long friendId);
+
+    void deleteFriend(Long userId, Long friendId);
+
+    List<User> getFriends(Long userId);
+
+    List<User> getCommonFriends(Long userId, Long friendId);
+
+    boolean exists(Long userId);  // Новый метод для проверки существования пользователя
 }
